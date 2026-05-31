@@ -1,0 +1,76 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Common Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    function incoming() {
+      return request.resource.data;
+    }
+    
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Messages ---
+    function isValidMessage(data) {
+      return data.keys().hasAll(['text', 'authorId', 'authorName', 'createdAt']) && data.keys().size() == 4
+        && data.text is string && data.text.size() <= 1000 && data.text.size() > 0
+        && data.authorId is string && data.authorId == request.auth.uid // Identity integrity
+        && data.authorName is string && data.authorName.size() <= 100
+        && data.createdAt == request.time;
+    }
+
+    match /messages/{messageId} {
+      // Anyone signed in can read messages
+      allow read: if isSignedIn();
+      // Only signed-in users can write messages, must pass validation, no updates
+      allow create: if isSignedIn() && isValidId(messageId) && isValidMessage(incoming());
+      allow update, delete: if false; // immutable chat
+    }
+
+    // --- Users ---
+    function isValidUser(data) {
+      return data.keys().hasAll(['userId', 'name']) && data.keys().size() >= 2
+        && data.userId is string && data.userId == request.auth.uid
+        && data.name is string && data.name.size() <= 100;
+    }
+
+    match /users/{userId} {
+      // Users can read their own profile
+      allow get: if isSignedIn() && request.auth.uid == userId;
+      allow list: if false; // No blanket listing of users
+      
+      allow create: if isSignedIn() && isValidId(userId) && userId == request.auth.uid && isValidUser(incoming());
+      allow update: if isSignedIn() && userId == request.auth.uid && isValidUser(incoming()) && incoming().userId == existing().userId;
+      allow delete: if false;
+    }
+
+    // --- Assets ---
+    function isValidAsset(data) {
+      return data.keys().hasAll(['ownerId', 'assetHash', 'registeredAt']) && data.keys().size() == 3
+        && data.ownerId is string && data.ownerId == request.auth.uid
+        && data.assetHash is string && data.assetHash.size() <= 200
+        && data.registeredAt == request.time;
+    }
+
+    match /assets/{assetId} {
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(assetId) && isValidAsset(incoming());
+      allow update, delete: if false; // immutable audit trail
+    }
+  }
+}

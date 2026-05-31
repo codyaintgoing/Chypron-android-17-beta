@@ -1,0 +1,52 @@
+{
+  "entities": {
+    "Message": {
+      "title": "Group Message",
+      "description": "A message in the Spencer content group chat.",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "timestamp" }
+      },
+      "required": ["text", "authorId", "authorName", "createdAt"]
+    },
+    "User": {
+      "title": "User Profile",
+      "description": "A user profile in the system.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" }
+      },
+      "required": ["userId", "name"]
+    },
+    "Asset": {
+      "title": "Sovereign Asset",
+      "description": "An asset registered in the Sovereign Mainframe.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string" },
+        "assetHash": { "type": "string" },
+        "registeredAt": { "type": "string", "format": "timestamp" }
+      },
+      "required": ["ownerId", "assetHash", "registeredAt"]
+    }
+  },
+  "firestore": {
+    "/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/Message" },
+      "description": "Global Spencer content group chat."
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles."
+    },
+    "/assets/{assetId}": {
+      "schema": { "$ref": "#/entities/Asset" },
+      "description": "Sovereign Mainframe assets."
+    }
+  }
+}

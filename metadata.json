@@ -1,0 +1,6 @@
+{
+  "name": "android 17 chypron",
+  "description": "ai assistant extrodanar Jarvis-intellect \"beta\" by: clifton cody edgar. Music theory analysis and Sovereign Mainframe integrations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
