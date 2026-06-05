@@ -1,14 +1,21 @@
 {
   "name": "react-example",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "dev": "BUILD_TARGET=hybrid tsx server.ts",
+    "dev:browser": "BUILD_TARGET=browser vite --port=3000 --host=0.0.0.0",
+    "dev:node": "BUILD_TARGET=node tsx server.ts",
+    "build": "vite build --mode production && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build:browser": "vite build --mode production",
+    "build:node": "esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build:hybrid": "npm run build",
     "start": "node dist/server.cjs",
-    "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "preview": "vite preview",
+    "clean": "rm -rf dist server.js && npm run lint",
+    "lint": "tsc --noEmit",
+    "type-check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -32,5 +39,9 @@
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 }
